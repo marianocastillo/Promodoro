@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTD/Pomodoro</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <style>
+        #miCanvas {
+            margin: auto;
+            border: 1px solid black;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="m-5">
+        <script>
+            let miCanvas = document.createElement("canvas");
+            miCanvas.setAttribute("id", "miCanvas");
+            document.body.appendChild(miCanvas);
+            miCanvas.width = 460;
+            miCanvas.height = 460;
+
+            let contexto = miCanvas.getContext("2d");
+            let variacion = 7;
+            let giro = variacion;
+            setInterval(function () {
+                giro += variacion;
+
+                contexto.save();
+                contexto.translate(miCanvas.width / 2, miCanvas.height / 2);
+                contexto.rotate(gradosARadianes(giro % 360));
+                dibujarCuadricula();
+                contexto.restore();
+
+                dibujarReloj();
+            }, 100);
+
+            function dibujarReloj() {
+                contexto.save();
+                contexto.translate(miCanvas.width / 2, miCanvas.height / 2);
+
+                contexto.beginPath();
+                contexto.fillStyle = "white";
+                contexto.arc(0, 0, 200, 0, 2 * Math.PI);
+                contexto.fill();
+                contexto.stroke();
+
+                dibujarLineasDeHoras();
+                dibujarLineasDeMinutos();
+                dibujarNumeros(true);
+                dibujarMarca("AILOGIC");
+
+                let fechaActual = new Date();
+                let segundos = fechaActual.getSeconds() / 60;
+                let minutos = (fechaActual.getMinutes() + segundos) / 60;
+                let horas = (fechaActual.getHours() + minutos) / 12;
+
+                dibujarAguja("black", 10, 100, horas);
+                dibujarAguja("blue", 8, 150, minutos);
+                dibujarAguja("red", 4, 160, segundos);
+
+                contexto.beginPath();
+                contexto.fillStyle = "black";
+                contexto.arc(0, 0, 10, 0, 2 * Math.PI);
+                contexto.fill();
+
+                contexto.restore();
+            }
+
+            function dibujarCuadricula(incremento = 20) {
+                contexto.save();
+                contexto.fillStyle = "white";
+
+
+                contexto.lineWidth = 1;
+
+                let rojo, verde, azul, color;
+                rojo = Math.round(Math.random() * 255);
+                verde = Math.round(Math.random() * 255);
+                azul = Math.round(Math.random() * 255);
+                color = `rgb(${rojo}, ${verde}, ${azul})`;
+                contexto.strokeStyle = color;
+
+                for (let y = -miCanvas.height / 2; y < miCanvas.height / 2; y += incremento) {
+                    contexto.beginPath();
+                    contexto.moveTo(-miCanvas.width, y);
+                    contexto.lineTo(miCanvas.width, y);
+                    contexto.stroke();
+                }
+
+
+
+                for (let x = -miCanvas.width / 2; x < miCanvas.width / 2; x += incremento) {
+                    contexto.beginPath();
+                    contexto.moveTo(x, -miCanvas.height);
+                    contexto.lineTo(x, miCanvas.height);
+                    contexto.stroke();
+                }
+                contexto.restore();
+            }
+
+            function dibujarMarca(marca = "Rolex") {
+                contexto.save();
+                contexto.beginPath();
+                contexto.textAlign = "center";
+                contexto.font = "30px Arial";
+                contexto.strokeText(marca, 0, -60);
+                contexto.stroke();
+                contexto.restore();
+            }
+
+            function dibujarAguja(color, grosor, tamanio, angulo) {
+                tamanio = -Math.abs(tamanio);
+                contexto.save();
+                contexto.beginPath();
+                contexto.rotate(gradosARadianes(angulo * 360));
+                contexto.strokeStyle = color;
+                contexto.fillStyle = color;
+                contexto.shadowColor = "black";
+                contexto.shadowOffsetX = 5;
+                contexto.shadowOffsetY = 5;
+                contexto.shadowBlur = 5;
+                contexto.globalAlpha = 0.6;
+                contexto.moveTo(0, 0);
+                contexto.lineTo(-grosor, tamanio / 4);
+                contexto.lineTo(0, tamanio);
+                contexto.lineTo(grosor, tamanio / 4);
+                contexto.closePath();
+                contexto.stroke();
+                contexto.fill();
+                contexto.restore();
+            }
+
+            function gradosARadianes(grados = 0) {
+                return grados * (Math.PI / 180);
+            }
+
+            function dibujarNumeros(sonRomanos = false) {
+                const numerosRomanos = " ,i,ii,iii,iv,v,vi,vii,viii,ix,x,xi,xii".toUpperCase().split(",");
+
+                let numero = 1;
+                contexto.save();
+                contexto.lineWidth = 1;
+                contexto.strokeStyle = "black";
+                contexto.font = "20px Arial";
+                contexto.textAlign = "center";
+                do {
+                    contexto.rotate(gradosARadianes(30));
+                    contexto.beginPath();
+                    contexto.strokeText((sonRomanos) ? numerosRomanos[numero] : numero, 0, -150);
+                    contexto.stroke();
+                    numero++;
+                } while (numero <= 12);
+                contexto.restore();
+            }
+
+
+            function dibujarLineasDeHoras() {
+                contexto.save();
+                let lineasDeHoras = 12;
+                contexto.lineWidth = 3;
+                contexto.strokeStyle = "black";
+                while (lineasDeHoras > 0) {
+                    contexto.beginPath();
+                    contexto.moveTo(0, -185);
+                    contexto.lineTo(0, -170);
+                    contexto.stroke();
+
+                    contexto.rotate(gradosARadianes(30));
+                    lineasDeHoras -= 1;
+                }
+                contexto.restore();
+            }
+
+            function dibujarLineasDeMinutos() {
+                contexto.save();
+                let numero = 0;
+                contexto.lineWidth = 1;
+                while (numero < 60) {
+                    contexto.beginPath();
+                    contexto.strokeStyle = "blue";
+                    contexto.moveTo(0, -185);
+                    contexto.lineTo(0, -175);
+                    contexto.stroke();
+
+                    contexto.strokeStyle = "gray";
+                    contexto.textAlign = "center";
+                    contexto.strokeText(numero, 0, -190);
+
+                    contexto.rotate(gradosARadianes(6));
+                    numero++;
+                }
+                contexto.restore();
+            }
+        </script>
+    </div>
+    <div class="container">
+        <div class="row">
+
+            <div class="col-6">
+                <h1>GTD/Pomodoro</h1>
+                <div>
+                    <label for="task">Tarea</label>
+                </div>
+                <br>
+                <div>
+                    <input class="form-control text-center" type="text" id="task" name="task"">
+                    </div> 
+                    <br>
+                    <div>
+                        <label for=" time">Tiempo</label>
+                </div>
+                <br>
+                <div>
+                    <input class="form-control text-center" type="number" id="time" name="time" min="1" step="1">
+                </div>
+                <br>
+                <div class="timer">
+                    <p id="timer-display">00:00</p>
+                </div>
+                <button class="btn btn-primary" id="start">Comenzar</button>
+                <button class="btn btn-secondary" id="pause">Pausar</button>
+                <button class="btn btn-success" id="reset">Reiniciar</button>
+                <div class="col-6">
+
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+            let timer = null;
+            let timeLeft = 0;
+
+            document.getElementById('start').addEventListener('click', () => {
+                const task = document.getElementById('task').value;
+                const time = parseInt(document.getElementById('time').value) * 60;
+
+                if (task && time) {
+                    startTimer(time);
+                } else {
+                    alert('Por favor, complete todos los campos');
+                }
+            });
+
+            document.getElementById('pause').addEventListener('click', () => {
+                clearInterval(timer);
+                timer = null;
+            });
+
+            document.getElementById('reset').addEventListener('click', () => {
+                clearInterval(timer);
+                timer = null;
+                timeLeft = 0;
+                updateTimerDisplay();
+            });
+
+            function startTimer(totalTime) {
+                timeLeft = totalTime;
+                timer = setInterval(() => {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        timer = null;
+                        playSound();
+                        alert('Tiempo Concluido');
+                    }
+                }, 1000);
+            }
+
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timer-display').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            function playSound() {
+                const audio = new Audio('timbre.mp3');
+                audio.play();
+
+            }
+
+
+        </script>
+
+
+
+
+
+
+
+
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+            crossorigin="anonymous"></script>
+</body>
+
+</html>
